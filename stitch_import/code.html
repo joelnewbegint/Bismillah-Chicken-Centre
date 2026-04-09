@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Smart Poultry Desk - Portal Access</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@400;500;600;700;800;900&amp;family=Manrope:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                "primary": "#ffc965",
+                "on-primary": "#0e0e0e",
+                "background": "#0e0e0e",
+                "surface": "#131313",
+                "surface-container": "#1a1a1a",
+                "surface-variant": "#262626",
+                "outline": "#484847",
+                "on-surface": "#ffffff",
+                "on-surface-variant": "#a1a1a1",
+                "tertiary": "#feb700"
+            },
+            "borderRadius": {
+                "DEFAULT": "1rem",
+                "lg": "2rem",
+                "xl": "3rem",
+                "full": "9999px"
+            },
+            "fontFamily": {
+                "headline": ["Epilogue"],
+                "body": ["Manrope"],
+                "label": ["Manrope"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .glass-panel {
+            background: rgba(19, 19, 19, 0.7);
+            backdrop-filter: blur(40px);
+            -webkit-backdrop-filter: blur(40px);
+            border: 1px solid rgba(255, 201, 101, 0.1);
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glow-accent {
+            box-shadow: 0 0 30px 2px rgba(255, 201, 101, 0.15);
+        }
+    </style>
+</head>
+<body class="bg-background font-body text-on-surface min-h-screen flex flex-col items-center relative overflow-x-hidden">
+<!-- Top App Bar Component -->
+<header class="fixed top-0 w-full z-50 flex justify-between items-center px-6 py-4 bg-[#0e0e0e]/80 backdrop-blur-xl border-b border-outline/10">
+<div class="flex items-center gap-3">
+<img alt="Amber Grist Circular Logo" class="w-10 h-10 rounded-full object-cover border border-primary/20" src="https://lh3.googleusercontent.com/aida/ADBb0uh_pcOtRndq-o4KKRub836690-7miV9Oh1WqeNzINkrIr19gOmqEK_YFUqYLNru_4IHg-GN4VbezmbTLqDCfGACPknekPSsGb8v1vfHcX0o9InCKOvAlO7LgZqIgWKYUaesLbfATb_f9POFccQFiYlH6Z8KaP_Ovgtt1tDCp_eb-SmA7XOs0_UZt47Aq6zwv6_B0qk_7QYRO5tJMWBMWsj3gN_9IzzH88RdP8u-_onr3z1RBTIcJ9xhOvUCuPTnlFq4ZXVW2au4cIg"/>
+<span class="text-2xl font-black text-[#ffc965] tracking-tighter font-headline uppercase">SMART POULTRY</span>
+</div>
+<button class="text-[#ffc965] hover:opacity-80 active:scale-95 duration-200">
+<span class="material-symbols-outlined text-2xl">notifications</span>
+</button>
+</header>
+<!-- Ambient Background Decor -->
+<div class="absolute inset-0 z-0 bg-[radial-gradient(circle_at_top_right,_rgba(255,201,101,0.08),transparent_50%),radial-gradient(circle_at_bottom_left,_rgba(254,183,0,0.05),transparent_40%)]"></div>
+<main class="w-full max-w-[480px] px-6 pt-28 pb-32 z-10 relative">
+<!-- Brand Header -->
+<header class="text-center mb-10">
+<div class="inline-flex items-center justify-center w-24 h-24 mb-6 rounded-full p-1 bg-gradient-to-br from-primary to-tertiary glow-accent">
+<img alt="Brand Logo" class="w-full h-full rounded-full object-cover" src="https://lh3.googleusercontent.com/aida/ADBb0uh_pcOtRndq-o4KKRub836690-7miV9Oh1WqeNzINkrIr19gOmqEK_YFUqYLNru_4IHg-GN4VbezmbTLqDCfGACPknekPSsGb8v1vfHcX0o9InCKOvAlO7LgZqIgWKYUaesLbfATb_f9POFccQFiYlH6Z8KaP_Ovgtt1tDCp_eb-SmA7XOs0_UZt47Aq6zwv6_B0qk_7QYRO5tJMWBMWsj3gN_9IzzH88RdP8u-_onr3z1RBTIcJ9xhOvUCuPTnlFq4ZXVW2au4cIg"/>
+</div>
+<h1 class="font-headline font-black text-4xl tracking-tighter text-on-surface mb-2 uppercase italic">OPERATIONS PORTAL</h1>
+<p class="text-on-surface-variant font-medium text-base tracking-wide uppercase opacity-70">Kinetic Precision Management</p>
+</header>
+<!-- Login Card -->
+<div class="glass-panel rounded-xl p-8 shadow-2xl">
+<!-- Status Messages -->
+<div class="space-y-3 mb-8">
+<div class="flex items-center gap-3 p-4 bg-primary/5 text-primary rounded-lg border border-primary/10">
+<span class="material-symbols-outlined text-lg">check_circle</span>
+<p class="text-xs font-bold uppercase tracking-widest">Biometric bypass enabled</p>
+</div>
+</div>
+<!-- Modern Form -->
+<form class="space-y-6" onsubmit="return false;">
+<div class="space-y-2">
+<label class="block text-[10px] font-black uppercase tracking-[0.2em] text-primary/60 ml-1" for="email">Network ID</label>
+<div class="relative group">
+<div class="absolute inset-y-0 left-4 flex items-center pointer-events-none text-outline group-focus-within:text-primary transition-colors">
+<span class="material-symbols-outlined text-xl">alternate_email</span>
+</div>
+<input class="w-full pl-12 pr-4 py-5 bg-surface-container border-none ring-1 ring-outline/20 rounded-full focus:ring-2 focus:ring-primary transition-all text-on-surface font-semibold placeholder:text-outline/40 placeholder:font-normal" id="email" placeholder="USER_NAME@AMBERGRIST.HUB" type="email"/>
+</div>
+</div>
+<div class="space-y-2">
+<div class="flex justify-between items-center ml-1">
+<label class="block text-[10px] font-black uppercase tracking-[0.2em] text-primary/60" for="password">Security Key</label>
+<a class="text-[10px] font-black uppercase tracking-widest text-outline hover:text-primary transition-colors" href="#">Recovery</a>
+</div>
+<div class="relative group">
+<div class="absolute inset-y-0 left-4 flex items-center pointer-events-none text-outline group-focus-within:text-primary transition-colors">
+<span class="material-symbols-outlined text-xl">key</span>
+</div>
+<input class="w-full pl-12 pr-12 py-5 bg-surface-container border-none ring-1 ring-outline/20 rounded-full focus:ring-2 focus:ring-primary transition-all text-on-surface font-semibold placeholder:text-outline/40" id="password" placeholder="••••••••" type="password"/>
+<button class="absolute inset-y-0 right-4 flex items-center text-outline hover:text-primary transition-colors" type="button">
+<span class="material-symbols-outlined text-xl">visibility</span>
+</button>
+</div>
+</div>
+<div class="flex flex-col gap-4 pt-4">
+<button class="w-full py-5 px-6 bg-gradient-to-br from-primary to-tertiary text-on-primary font-black uppercase tracking-widest rounded-full shadow-xl shadow-primary/10 hover:shadow-primary/20 hover:scale-[1.01] active:scale-95 duration-200 flex items-center justify-center gap-2">
+                    Initiate Session
+                    <span class="material-symbols-outlined text-xl">arrow_forward_ios</span>
+</button>
+<button class="w-full py-5 px-6 border border-outline/30 text-on-surface-variant font-black uppercase tracking-widest rounded-full hover:bg-surface-variant hover:text-on-surface active:scale-95 transition-all text-xs">
+                    New Operator Registration
+                </button>
+</div>
+</form>
+<div class="mt-8 pt-8 border-t border-outline/10">
+<div class="flex items-center justify-center gap-6">
+<button class="w-14 h-14 flex items-center justify-center rounded-full bg-surface-variant hover:bg-surface-container transition-all border border-outline/10 group">
+<span class="material-symbols-outlined text-on-surface-variant group-hover:text-primary transition-colors">fingerprint</span>
+</button>
+<button class="w-14 h-14 flex items-center justify-center rounded-full bg-surface-variant hover:bg-surface-container transition-all border border-outline/10 group">
+<span class="material-symbols-outlined text-on-surface-variant group-hover:text-primary transition-colors">qr_code_2</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Farmer's Tip / Insight Overlay -->
+<div class="mt-10 overflow-hidden rounded-xl relative h-32 group cursor-pointer shadow-2xl border border-outline/10">
+<img alt="Modern Poultry Farm" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCUmFMVLOJZpkTGKixYELyoKKop0-JkBp45HqQZqGlLf8C7a1yTbcZTWX6B31OAd75EEeoW_wvuO8U6th7R6AYaosaSoAUKjJqWmnKRySbPtBePkchJGgViUwfvfVOAap3NBvdhL80_gCU85UnmPB-wHgZAUvoI1rP5JeBs9i2yE-uZV8mnDKj-3Jqm6-r4z7eAbjGKonK4Ge24Bsvx4VJMW_-knVg9xsJRZ6SR8eOrEzWO6rQdm_UXbf8EwscvSqdmgt_MaxwoLUvZ"/>
+<div class="absolute inset-0 bg-gradient-to-r from-background via-background/60 to-transparent flex items-center p-6">
+<div>
+<p class="text-[10px] font-black uppercase tracking-[0.2em] text-primary">KINETIC INSIGHT</p>
+<p class="font-headline font-bold text-sm text-on-surface max-w-[200px]">Real-time flock analytics improves logistics velocity by 12%.</p>
+</div>
+</div>
+</div>
+</main>
+<!-- Navigation Drawer Placeholder (Visual only for context) -->
+<!-- Footer Component -->
+<footer class="w-full bg-[#131313] mt-auto border-t border-outline/10">
+<div class="w-full max-w-7xl mx-auto px-8 flex flex-col md:flex-row justify-between items-center gap-4 py-12">
+<div class="font-['Epilogue'] font-black text-[#ffc965] tracking-tighter uppercase text-lg">AMBER GRIST KINETIC</div>
+<div class="flex gap-8">
+<a class="text-[#484847] hover:text-white transition-colors font-['Manrope'] text-xs font-medium uppercase tracking-widest" href="#">Privacy</a>
+<a class="text-[#484847] hover:text-white transition-colors font-['Manrope'] text-xs font-medium uppercase tracking-widest" href="#">Support</a>
+</div>
+<p class="text-[#484847] font-['Manrope'] text-[10px] font-medium tracking-tight uppercase">© 2024 AMBER GRIST KINETIC. ALL RIGHTS RESERVED.</p>
+</div>
+</footer>
+<!-- Bottom NavBar Component -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-6 pt-2 bg-[#0e0e0e]/90 backdrop-blur-2xl border-t border-[#484847]/20 rounded-t-[3rem] shadow-[0_-10px_40px_rgba(0,0,0,0.5)]">
+<div class="flex flex-col items-center justify-center text-[#484847] p-2 hover:text-[#ffc965] transition-all cursor-pointer">
+<span class="material-symbols-outlined">home</span>
+<span class="font-['Manrope'] font-bold text-[8px] uppercase tracking-widest mt-1">Home</span>
+</div>
+<div class="flex flex-col items-center justify-center bg-gradient-to-br from-[#ffc965] to-[#feb700] text-[#0e0e0e] rounded-full p-4 mb-8 scale-110 shadow-lg shadow-[#ffc965]/20 active:scale-90 duration-150 cursor-pointer">
+<span class="material-symbols-outlined text-3xl">login</span>
+</div>
+<div class="flex flex-col items-center justify-center text-[#484847] p-2 hover:text-[#ffc965] transition-all cursor-pointer">
+<span class="material-symbols-outlined">inventory</span>
+<span class="font-['Manrope'] font-bold text-[8px] uppercase tracking-widest mt-1">Hub</span>
+</div>
+</nav>
+</body></html>
