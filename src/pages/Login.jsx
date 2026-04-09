@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
 import { Badge, Button, Panel } from "../components/ui";
+import { useTheme } from "../context/ThemeContext";
 import { supabase } from "../lib/supabase";
 
 function Login() {
+  const { theme, toggleTheme } = useTheme();
   const [form, setForm] = useState({ email: "", password: "" });
   const [loadingAction, setLoadingAction] = useState("");
   const [error, setError] = useState("");
@@ -112,6 +114,29 @@ function Login() {
 
   return (
     <div className="relative flex min-h-screen items-center justify-center overflow-hidden px-4">
+      <button
+        type="button"
+        onClick={toggleTheme}
+        aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+        className="absolute right-4 top-4 z-10 inline-flex items-center gap-1.5 rounded-full border border-[#d6d3d1] bg-white/95 px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-wide text-[#1c1917] shadow-sm dark:border-[#484847] dark:bg-[#1a1a1a]/95 dark:text-[#f8fafc]"
+      >
+        <span
+          className={`inline-flex h-6 w-6 items-center justify-center rounded-full ${
+            theme === "dark" ? "bg-[#fb923c]/20 text-[#fb923c]" : "bg-[#f97316]/15 text-[#ea580c]"
+          }`}
+        >
+          {theme === "dark" ? (
+            <svg viewBox="0 0 24 24" className="h-3.5 w-3.5 fill-current" aria-hidden>
+              <path d="M6.76 4.84 5.35 3.43 3.93 4.84l1.41 1.42 1.42-1.42Zm10.49 0 1.41-1.41 1.41 1.41-1.41 1.42-1.41-1.42ZM12 4V1h-1v3h1Zm0 19v-3h-1v3h1Zm8-11h3v-1h-3v1ZM4 12H1v-1h3v1Zm13.66 6.66 1.41 1.41 1.41-1.41-1.41-1.41-1.41 1.41ZM5.34 17.25l-1.41 1.41 1.41 1.41 1.41-1.41-1.41-1.41ZM12 6a6 6 0 1 0 0 12 6 6 0 0 0 0-12Z" />
+            </svg>
+          ) : (
+            <svg viewBox="0 0 24 24" className="h-3.5 w-3.5 fill-current" aria-hidden>
+              <path d="M20.742 13.045a8.088 8.088 0 0 1-9.787-9.787A9 9 0 1 0 20.742 13.045Z" />
+            </svg>
+          )}
+        </span>
+        {theme === "dark" ? "Light" : "Dark"}
+      </button>
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(249,115,22,0.14),transparent_45%),radial-gradient(circle_at_bottom_left,_rgba(249,115,22,0.10),transparent_50%)]" />
       <Panel className="relative w-full max-w-md p-6 shadow-2xl">
         <div className="mb-5 flex items-center gap-3">

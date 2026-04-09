@@ -1,8 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
 import { jsPDF } from "jspdf";
+import { useNavigate } from "react-router-dom";
 import { downloadCsv } from "../lib/exportCsv";
 import { formatCurrency, formatDateIso } from "../lib/metrics";
 import { supabase } from "../lib/supabase";
+import { createRunWithAuthRecovery } from "../lib/supabaseAuthRecovery";
 import { Button, DataTable, Panel } from "../components/ui";
 
 const defaultDate = new Date().toISOString().slice(0, 10);
@@ -10,6 +12,8 @@ const whatsappPhone = import.meta.env.VITE_WHATSAPP_PHONE || "91XXXXXXXXXX";
 const pageSize = 8;
 
 function Sales() {
+  const navigate = useNavigate();
+  const runWithAuthRecovery = useMemo(() => createRunWithAuthRecovery(navigate), [navigate]);
   const [form, setForm] = useState({
     date: defaultDate,
     chicken_type: "Broiler Chicken",
@@ -53,17 +57,26 @@ function Sales() {
 
   const fetchSales = async ({ showLoading = true } = {}) => {
     if (showLoading) setLoadingSales(true);
-    const { data, error: fetchError } = await supabase.from("sales").select("*").order("date", { ascending: false });
-    if (fetchError) {
-      setError(fetchError.message);
-    } else {
-      setSales(data || []);
+    try {
+      const { data, error: fetchError } = await runWithAuthRecovery(() =>
+        supabase
+          .from("sales")
+          .select("*")
+          .order("date", { ascending: false })
+          .order("id", { ascending: false }),
+      );
+
+      if (fetchError) {
+        setError(fetchError.message);
+      } else {
+        setSales(data || []);
+      }
+    } finally {
+      setLoadingSales(false);
     }
-    if (showLoading) setLoadingSales(false);
   };
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     void fetchSales({ showLoading: false });
   }, []);
 
@@ -88,28 +101,46 @@ Thank you!`;
     setError("");
     setMessage("");
 
+    const parsedWeight = Number(form.weight);
+    const parsedPrice = Number(form.price_per_kg);
+    if (!Number.isFinite(parsedWeight) || parsedWeight <= 0) {
+      setError("Enter a valid weight greater than 0.");
+      setLoading(false);
+      return;
+    }
+    if (!Number.isFinite(parsedPrice) || parsedPrice <= 0) {
+      setError("Enter a valid price per kg greater than 0.");
+      setLoading(false);
+      return;
+    }
+
     const payload = {
       date: form.date,
       chicken_type: form.chicken_type.trim(),
-      weight: Number(form.weight),
-      price_per_kg: Number(form.price_per_kg),
-      total: Number(total.toFixed(2)),
+      weight: parsedWeight,
+      price_per_kg: parsedPrice,
     };
 
-    const { data, error: insertError } = await supabase.from("sales").insert(payload).select().single();
+    const { data, error: insertError } = await runWithAuthRecovery(() =>
+      supabase.from("sales").insert(payload).select().single(),
+    );
 
     if (insertError) {
       setError(insertError.message);
     } else {
       setLatestSale(data);
       setMessage("Sale saved successfully.");
+      setCurrentPage(1);
+      if (data) {
+        setSales((prev) => [data, ...prev.filter((row) => row.id !== data.id)]);
+      }
       setForm({
         date: defaultDate,
         chicken_type: "Broiler Chicken",
         weight: "",
         price_per_kg: "",
       });
-      void fetchSales();
+      void fetchSales({ showLoading: false });
     }
 
     setLoading(false);
@@ -143,15 +174,16 @@ Thank you!`;
       chicken_type: editForm.chicken_type.trim(),
       weight: Number(editForm.weight),
       price_per_kg: Number(editForm.price_per_kg),
-      total: Number(editTotal.toFixed(2)),
     };
 
-    const { data, error: updateError } = await supabase
-      .from("sales")
-      .update(payload)
-      .eq("id", editingId)
-      .select()
-      .single();
+    const { data, error: updateError } = await runWithAuthRecovery(() =>
+      supabase
+        .from("sales")
+        .update(payload)
+        .eq("id", editingId)
+        .select()
+        .single(),
+    );
 
     if (updateError) {
       setError(updateError.message);
@@ -172,7 +204,9 @@ Thank you!`;
     setLoading(true);
     setError("");
     setMessage("");
-    const { error: deleteError } = await supabase.from("sales").delete().eq("id", saleId);
+    const { error: deleteError } = await runWithAuthRecovery(() =>
+      supabase.from("sales").delete().eq("id", saleId),
+    );
 
     if (deleteError) {
       setError(deleteError.message);
@@ -331,7 +365,7 @@ Thank you!`;
           <DataTable columns={["Date", "Type", "Weight", "Price/kg", "Total", "Actions"]}>
                 {paginatedSales.map((sale) => (
                   <tr key={sale.id} className="table-row-hover border-t border-[#e7e5e4] text-[#1c1917]">
-                    <td className="px-3 py-2">
+                    <td className="whitespace-nowrap px-3 py-2">
                       {editingId === sale.id ? (
                         <input
                           type="date"
@@ -355,7 +389,7 @@ Thank you!`;
                         sale.chicken_type
                       )}
                     </td>
-                    <td className="px-3 py-2">
+                    <td className="whitespace-nowrap px-3 py-2 text-right">
                       {editingId === sale.id ? (
                         <input
                           type="number"
@@ -369,7 +403,7 @@ Thank you!`;
                         sale.weight
                       )}
                     </td>
-                    <td className="px-3 py-2">
+                    <td className="whitespace-nowrap px-3 py-2 text-right">
                       {editingId === sale.id ? (
                         <input
                           type="number"
@@ -383,28 +417,28 @@ Thank you!`;
                         formatCurrency(sale.price_per_kg)
                       )}
                     </td>
-                    <td className="px-3 py-2">
+                    <td className="whitespace-nowrap px-3 py-2 text-right">
                       {editingId === sale.id ? formatCurrency(editTotal) : formatCurrency(sale.total)}
                     </td>
                     <td className="px-3 py-2">
                       {editingId === sale.id ? (
-                        <div className="flex gap-2">
-                          <Button type="button" variant="success" onClick={saveEdit}>
+                        <div className="flex flex-wrap justify-end gap-2">
+                          <Button type="button" variant="success" onClick={saveEdit} className="px-3 py-1.5 text-xs">
                             Save
                           </Button>
-                          <Button type="button" variant="muted" onClick={cancelEdit}>
+                          <Button type="button" variant="muted" onClick={cancelEdit} className="px-3 py-1.5 text-xs">
                             Cancel
                           </Button>
                         </div>
                       ) : (
-                        <div className="flex flex-wrap gap-2">
-                          <Button type="button" variant="info" onClick={() => startEdit(sale)}>
+                        <div className="flex flex-wrap justify-end gap-2">
+                          <Button type="button" variant="info" onClick={() => startEdit(sale)} className="px-3 py-1.5 text-xs">
                             Edit
                           </Button>
-                          <Button type="button" variant="danger" onClick={() => deleteSale(sale.id)}>
+                          <Button type="button" variant="danger" onClick={() => deleteSale(sale.id)} className="px-3 py-1.5 text-xs">
                             Delete
                           </Button>
-                          <Button type="button" variant="violet" onClick={() => downloadInvoice(sale)}>
+                          <Button type="button" variant="violet" onClick={() => downloadInvoice(sale)} className="px-3 py-1.5 text-xs">
                             Invoice PDF
                           </Button>
                         </div>

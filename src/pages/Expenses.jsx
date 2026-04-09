@@ -1,13 +1,17 @@
 import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { downloadCsv } from "../lib/exportCsv";
 import { formatCurrency, formatDateIso } from "../lib/metrics";
 import { supabase } from "../lib/supabase";
+import { createRunWithAuthRecovery } from "../lib/supabaseAuthRecovery";
 import { Button, DataTable, Panel } from "../components/ui";
 
 const defaultDate = new Date().toISOString().slice(0, 10);
 const pageSize = 8;
 
 function Expenses() {
+  const navigate = useNavigate();
+  const runWithAuthRecovery = useMemo(() => createRunWithAuthRecovery(navigate), [navigate]);
   const [form, setForm] = useState({
     date: defaultDate,
     type: "",
@@ -25,21 +29,26 @@ function Expenses() {
 
   const fetchExpenses = async ({ showLoading = true } = {}) => {
     if (showLoading) setLoadingExpenses(true);
-    const { data, error: fetchError } = await supabase
-      .from("expenses")
-      .select("*")
-      .order("date", { ascending: false });
+    try {
+      const { data, error: fetchError } = await runWithAuthRecovery(() =>
+        supabase
+          .from("expenses")
+          .select("*")
+          .order("date", { ascending: false })
+          .order("id", { ascending: false }),
+      );
 
-    if (fetchError) {
-      setError(fetchError.message);
-    } else {
-      setExpenses(data || []);
+      if (fetchError) {
+        setError(fetchError.message);
+      } else {
+        setExpenses(data || []);
+      }
+    } finally {
+      setLoadingExpenses(false);
     }
-    if (showLoading) setLoadingExpenses(false);
   };
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     void fetchExpenses({ showLoading: false });
   }, []);
 
@@ -55,7 +64,9 @@ function Expenses() {
       amount: Number(form.amount),
     };
 
-    const { error: insertError } = await supabase.from("expenses").insert(payload);
+    const { error: insertError } = await runWithAuthRecovery(() =>
+      supabase.from("expenses").insert(payload),
+    );
     if (insertError) {
       setError(insertError.message);
     } else {
@@ -116,14 +127,16 @@ function Expenses() {
     setError("");
     setMessage("");
 
-    const { error: updateError } = await supabase
-      .from("expenses")
-      .update({
-        date: editForm.date,
-        type: editForm.type.trim(),
-        amount: Number(editForm.amount),
-      })
-      .eq("id", editingId);
+    const { error: updateError } = await runWithAuthRecovery(() =>
+      supabase
+        .from("expenses")
+        .update({
+          date: editForm.date,
+          type: editForm.type.trim(),
+          amount: Number(editForm.amount),
+        })
+        .eq("id", editingId),
+    );
 
     if (updateError) {
       setError(updateError.message);
@@ -143,7 +156,9 @@ function Expenses() {
     setLoading(true);
     setError("");
     setMessage("");
-    const { error: deleteError } = await supabase.from("expenses").delete().eq("id", expenseId);
+    const { error: deleteError } = await runWithAuthRecovery(() =>
+      supabase.from("expenses").delete().eq("id", expenseId),
+    );
 
     if (deleteError) {
       setError(deleteError.message);

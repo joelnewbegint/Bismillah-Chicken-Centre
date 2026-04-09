@@ -1,14 +1,15 @@
 import { useEffect, useState } from "react";
 import { BrowserRouter, Navigate, Outlet, Route, Routes } from "react-router-dom";
 import Navbar from "./components/Navbar";
-import { Button, Panel } from "./components/ui";
+import { ThemeProvider } from "./context/ThemeContext";
+import { Panel } from "./components/ui";
 import Buying from "./pages/Buying";
 import Dashboard from "./pages/Dashboard";
 import Expenses from "./pages/Expenses";
 import Login from "./pages/Login";
 import Sales from "./pages/Sales";
 import Splash from "./pages/Splash";
-import { supabase } from "./lib/supabase";
+import { isSupabaseUsingFallbackConfig, supabase } from "./lib/supabase";
 
 function ProtectedLayout({ session }) {
   if (!session) {
@@ -18,26 +19,67 @@ function ProtectedLayout({ session }) {
   return (
     <div className="min-h-screen">
       <Navbar />
-      <main className="mx-auto max-w-6xl px-4 py-6 sm:px-6 lg:px-8">
+      <main className="mx-auto max-w-6xl px-4 pb-28 pt-6 sm:px-6 lg:px-8">
         <Outlet />
       </main>
     </div>
   );
 }
 
-function App() {
+function AppRoot() {
   const [session, setSession] = useState(null);
   const [isAuthLoading, setIsAuthLoading] = useState(true);
   const [showSplash, setShowSplash] = useState(true);
-  const [theme, setTheme] = useState(() => localStorage.getItem("theme") || "light");
+  const [dismissFallbackBanner, setDismissFallbackBanner] = useState(false);
+  const showConfigBanner = isSupabaseUsingFallbackConfig && !dismissFallbackBanner;
 
   useEffect(() => {
     let mounted = true;
 
     const getCurrentSession = async () => {
-      const { data } = await supabase.auth.getSession();
+      const { data, error } = await supabase.auth.getSession();
+
+      if (error) {
+        await supabase.auth.signOut({ scope: "local" });
+        if (mounted) {
+          setSession(null);
+          setIsAuthLoading(false);
+        }
+        return;
+      }
+
+      const existing = data.session;
+      if (!existing) {
+        if (mounted) {
+          setSession(null);
+          setIsAuthLoading(false);
+        }
+        return;
+      }
+
+      const nowSec = Math.floor(Date.now() / 1000);
+      const exp = existing.expires_at;
+      const needsRefresh = exp != null && exp <= nowSec + 120;
+
+      if (needsRefresh) {
+        const { data: refreshed, error: refreshError } = await supabase.auth.refreshSession();
+        if (refreshError || !refreshed.session) {
+          await supabase.auth.signOut({ scope: "local" });
+          if (mounted) {
+            setSession(null);
+            setIsAuthLoading(false);
+          }
+          return;
+        }
+        if (mounted) {
+          setSession(refreshed.session);
+          setIsAuthLoading(false);
+        }
+        return;
+      }
+
       if (mounted) {
-        setSession(data.session ?? null);
+        setSession(existing);
         setIsAuthLoading(false);
       }
     };
@@ -55,14 +97,15 @@ function App() {
   }, []);
 
   useEffect(() => {
+    if (!isAuthLoading) return;
+    const timer = window.setTimeout(() => setIsAuthLoading(false), 8000);
+    return () => window.clearTimeout(timer);
+  }, [isAuthLoading]);
+
+  useEffect(() => {
     const timer = window.setTimeout(() => setShowSplash(false), 2200);
     return () => window.clearTimeout(timer);
   }, []);
-
-  useEffect(() => {
-    document.documentElement.classList.toggle("dark", theme === "dark");
-    localStorage.setItem("theme", theme);
-  }, [theme]);
 
   if (showSplash) {
     return <Splash />;
@@ -80,31 +123,36 @@ function App() {
 
   return (
     <BrowserRouter>
-      <Button
-        type="button"
-        onClick={() => setTheme((prev) => (prev === "dark" ? "light" : "dark"))}
-        aria-label="Toggle theme"
-        title={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
-        variant="secondary"
-        className="fixed right-4 top-4 z-50 border border-[#d6d3d1]/70 bg-white/90 text-[#1c1917] shadow-sm backdrop-blur dark:border-[#484847]/70 dark:bg-[#131313]/90 dark:text-[#f8fafc] dark:hover:bg-[#1a1a1a]"
-      >
-        <span
-          className={`inline-flex h-7 w-7 items-center justify-center rounded-full ${
-            theme === "dark" ? "bg-[#fb923c]/20 text-[#fb923c]" : "bg-[#f97316]/15 text-[#ea580c]"
-          }`}
+      {showConfigBanner ? (
+        <div
+          role="alert"
+          className="border-b border-amber-300/90 bg-amber-50 px-4 py-2.5 text-sm text-amber-950 dark:border-amber-700/50 dark:bg-amber-950/50 dark:text-amber-50"
         >
-          {theme === "dark" ? (
-            <svg viewBox="0 0 24 24" className="h-4 w-4 fill-current" aria-hidden="true">
-              <path d="M6.76 4.84 5.35 3.43 3.93 4.84l1.41 1.42 1.42-1.42Zm10.49 0 1.41-1.41 1.41 1.41-1.41 1.42-1.41-1.42ZM12 4V1h-1v3h1Zm0 19v-3h-1v3h1Zm8-11h3v-1h-3v1ZM4 12H1v-1h3v1Zm13.66 6.66 1.41 1.41 1.41-1.41-1.41-1.41-1.41 1.41ZM5.34 17.25l-1.41 1.41 1.41 1.41 1.41-1.41-1.41-1.41ZM12 6a6 6 0 1 0 0 12 6 6 0 0 0 0-12Z" />
-            </svg>
-          ) : (
-            <svg viewBox="0 0 24 24" className="h-4 w-4 fill-current" aria-hidden="true">
-              <path d="M20.742 13.045a8.088 8.088 0 0 1-9.787-9.787A9 9 0 1 0 20.742 13.045Z" />
-            </svg>
-          )}
-        </span>
-        <span>{theme === "dark" ? "Light" : "Dark"}</span>
-      </Button>
+          <div className="mx-auto flex max-w-6xl items-start justify-between gap-4 sm:items-center">
+            <p className="min-w-0 leading-snug">
+              <span className="font-semibold">Supabase:</span> Using bundled fallback URL and anon key. For your own
+              project, add{" "}
+              <code className="rounded bg-amber-200/80 px-1 font-mono text-xs dark:bg-amber-900/80">
+                VITE_SUPABASE_URL
+              </code>{" "}
+              and{" "}
+              <code className="rounded bg-amber-200/80 px-1 font-mono text-xs dark:bg-amber-900/80">
+                VITE_SUPABASE_ANON_KEY
+              </code>{" "}
+              to <code className="rounded bg-amber-200/80 px-1 font-mono text-xs dark:bg-amber-900/80">.env</code> (see{" "}
+              <code className="rounded bg-amber-200/80 px-1 font-mono text-xs dark:bg-amber-900/80">.env.example</code>
+              ).
+            </p>
+            <button
+              type="button"
+              onClick={() => setDismissFallbackBanner(true)}
+              className="shrink-0 rounded-full border border-amber-400/80 bg-white px-3 py-1 text-xs font-semibold text-amber-900 hover:bg-amber-100 dark:border-amber-600 dark:bg-amber-900/60 dark:text-amber-100 dark:hover:bg-amber-800/80"
+            >
+              Dismiss
+            </button>
+          </div>
+        </div>
+      ) : null}
       <Routes>
         <Route path="/login" element={session ? <Navigate to="/" replace /> : <Login />} />
         <Route element={<ProtectedLayout session={session} />}>
@@ -119,4 +167,10 @@ function App() {
   );
 }
 
-export default App;
+export default function App() {
+  return (
+    <ThemeProvider>
+      <AppRoot />
+    </ThemeProvider>
+  );
+}

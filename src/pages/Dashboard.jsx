@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import Card from "../components/Card";
 import Charts from "../components/Charts";
 import { Badge, Panel } from "../components/ui";
@@ -10,8 +11,11 @@ import {
   predictProfit,
 } from "../lib/metrics";
 import { supabase } from "../lib/supabase";
+import { createRunWithAuthRecovery } from "../lib/supabaseAuthRecovery";
 
 function Dashboard() {
+  const navigate = useNavigate();
+  const runWithAuthRecovery = useMemo(() => createRunWithAuthRecovery(navigate), [navigate]);
   const [sales, setSales] = useState([]);
   const [expenses, setExpenses] = useState([]);
   const [buying, setBuying] = useState([]);
@@ -25,9 +29,9 @@ function Dashboard() {
       setError("");
 
       const [salesRes, expenseRes, buyingRes] = await Promise.all([
-        supabase.from("sales").select("*").order("date", { ascending: true }),
-        supabase.from("expenses").select("*").order("date", { ascending: true }),
-        supabase.from("chicken_buying").select("*").order("date", { ascending: true }),
+        runWithAuthRecovery(() => supabase.from("sales").select("*").order("date", { ascending: true })),
+        runWithAuthRecovery(() => supabase.from("expenses").select("*").order("date", { ascending: true })),
+        runWithAuthRecovery(() => supabase.from("chicken_buying").select("*").order("date", { ascending: true })),
       ]);
 
       if (salesRes.error || expenseRes.error || buyingRes.error) {
@@ -131,12 +135,7 @@ function Dashboard() {
         <Card title="Profit" value={profit} variant={profit >= 0 ? "success" : "danger"} />
       </div>
 
-      <Charts
-        weeklySales={weeklySales}
-        monthlyProfit={monthlyProfit}
-        actualProfit={actualProfit}
-        predictedProfit={predictedProfit}
-      />
+      <Charts weeklySales={weeklySales} monthlyProfit={monthlyProfit} predictedProfit={predictedProfit} />
     </section>
   );
 }
